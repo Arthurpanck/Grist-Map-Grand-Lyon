@@ -13,12 +13,12 @@ let mapSource = 'https://openmaptiles.data.grandlyon.com/styles/vector/{z}/{x}/{
 let mapCopyright = 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012';
 
 // Noms des colonnes attendues dans Grist
-const Name = "Name";
+const Name = "Nom";
 const Longitude = "Longitude";
 const Latitude = "Latitude";
-const Geocode = 'Geocode';
-const Address = 'Address';
-const GeocodedAddress = 'GeocodedAddress';
+const Geocode = 'Geocoder';
+const Address = 'Adresse';
+const GeocodedAddress = 'AdresseGeocodee';
 
 let lastRecord;
 let lastRecords;
@@ -121,10 +121,10 @@ async function scan(tableId, records, mappings) {
     // On ne peut scanner que si la colonne Geocode est mappée
     if (!(Geocode in record)) { break; }
     if (!record[Geocode]) { continue; }
-    const address = record.Address;
-    // Mise en cache : GeocodedAddress contient la dernière adresse géocodée.
+    const address = record[Address];
+    // Mise en cache : AdresseGeocodee contient la dernière adresse géocodée.
     // Si l'adresse a changé, on remet les coordonnées à zéro.
-    if (record[GeocodedAddress] && record[GeocodedAddress] !== record.Address) {
+    if (record[GeocodedAddress] && record[GeocodedAddress] !== record[Address]) {
       record[Longitude] = null;
       record[Latitude] = null;
     }
@@ -182,8 +182,7 @@ function updateMap(data) {
     return;
   }
   if (!(Longitude in data[0] && Latitude in data[0] && Name in data[0])) {
-    showProblem("Table does not yet have all expected columns: Name, Longitude, Latitude. You can map custom columns" +
-    " in the Creator Panel.");
+    showProblem("La table n'a pas encore toutes les colonnes requises : Nom, Longitude, Latitude. Vous pouvez les mapper dans le Panneau Créateur.");
     return;
   }
 
@@ -396,12 +395,12 @@ function onEditOptions() {
 const optional = true;
 grist.ready({
   columns: [
-    "Name",
+    { name: "Nom", type: 'Text', title: 'Nom' },
     { name: "Longitude", type: 'Numeric' },
     { name: "Latitude", type: 'Numeric' },
-    { name: "Geocode", type: 'Bool', title: 'Geocode', optional },
-    { name: "Address", type: 'Text', optional },
-    { name: "GeocodedAddress", type: 'Text', title: 'Geocoded Address', optional },
+    { name: "Geocoder", type: 'Bool', title: 'Géocoder', optional },
+    { name: "Adresse", type: 'Text', title: 'Adresse', optional },
+    { name: "AdresseGeocodee", type: 'Text', title: 'Adresse géocodée', optional },
   ],
   allowSelectBy: true,
   onEditOptions
